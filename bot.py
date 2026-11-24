@@ -1,10 +1,4 @@
 
-"""
-DEXON - Solana USDC DEX Trading Bot
-Version 1.0
-Simulation Mode
-"""
-
 import logging
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import (
@@ -15,9 +9,13 @@ from telegram.ext import (
     filters,
 )
 
+from config import BOT_TOKEN, STARTING_BALANCE
+from trading import TradingEngine
+from scanner import scan_tokens
+
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = "PASTE_YOUR_TELEGRAM_BOT_TOKEN_HERE"
+engine = TradingEngine(STARTING_BALANCE)
 
 keyboard = [
     ["📊 Balance", "🔎 Scan Tokens"],
@@ -26,42 +24,82 @@ keyboard = [
 ]
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    reply = ReplyKeyboardMarkup(
-        keyboard, resize_keyboard=True
-    )
+    menu = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
     await update.message.reply_text(
         "🚀 Welcome to DEXON!\n"
-        "Solana USDC Trading Bot\n\n"
-        "⚠️ Simulation Mode: No real trades.",
-        reply_markup=reply,
+        "Solana USDC Trading Bot\n"
+        "Simulation Mode Only.",
+        reply_markup=menu,
     )
 
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     choice = update.message.text
 
-    responses = {
-        "📊 Balance": "💵 Simulation USDC Balance: $100.00",
-        "🔎 Scan Tokens": "🔎 Token scanner is under development.",
-        "🟢 Manual Trade": "🟢 Manual trading is in simulation mode.",
-        "🤖 Auto Trade": "🤖 Auto trading is not activated yet.",
-        "📈 My PnL": "📈 Simulation PnL: $0.00",
-        "⚙️ Settings": "⚙️ DEXON Settings",
-    }
+    if choice == "📊 Balance":
+        await update.message.reply_text(
+            f"💵 Simulation Balance: ${engine.get_balance():.2f} USDC"
+        )
 
-    await update.message.reply_text(
-        responses.get(choice, "Choose an option from the menu.")
-    )
+    elif choice == "🔎 Scan Tokens":
+        tokens = scan_tokens()
+
+        if isinstance(tokens, dict):
+            await update.message.reply_text("Scanner error. Try again later.")
+        elif not tokens:
+            await update.message.reply_text("No Solana tokens found.")
+        else:
+            message = "🔎 DEXON SOLANA SCANNER\n\n"
+            for token in tokens[:10]:
+                message += (
+                    f"Token: {token['address']}\n"
+                    f"Chart: {token['url']}\n\n"
+                )
+            await update.message.reply_text(message)
+
+    elif choice == "🟢 Manual Trade":
+        await update.message.reply_text(
+            "Manual trading is in development.\n"
+            "Simulation mode only."
+        )
+
+    elif choice == "🤖 Auto Trade":
+        status = engine.toggle_auto()
+        await update.message.reply_text(
+            f"Auto Trading: {'ON' if status else 'OFF'}\n"
+            "Simulation only."
+        )
+
+    elif choice == "📈 My PnL":
+        await update.message.reply_text(
+            "📈 Simulation PnL: $0.00"
+        )
+
+    elif choice == "⚙️ Settings":
+        await update.message.reply_text(
+            "DEXON Settings\n"
+            "Network: Solana\n"
+            "Currency: USDC\n"
+            "Mode: Simulation"
+        )
+
+    else:
+        await update.message.reply_text("Choose an option from the menu.")
 
 def main():
-    if BOT_TOKEN == "PASTE_YOUR_TELEGRAM_BOT_TOKEN_HERE":
-        raise ValueError("Please configure your Telegram bot token.")
+    if not BOT_TOKEN:
+        raise ValueError("BOT_TOKEN is missing. Configure it securely.")
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, menu)
+        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
+
+    print("DEXON is starting...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
+    
