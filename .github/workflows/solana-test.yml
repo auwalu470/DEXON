@@ -27,3 +27,6 @@ jobs:
 
       - name: Run DEXON Risk Test
         run: python test_risk.py
+
+      - name: Run DEXON Auto Trader Test
+        run: python test_auto_trader.py
