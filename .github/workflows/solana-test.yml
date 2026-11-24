@@ -30,3 +30,7 @@ jobs:
 
       - name: Run DEXON Auto Trader Test
         run: python test_auto_trader.py
+
+
+      - name: Run DEXON Auto Trader Test
+        run: python test_auto_trader.py
