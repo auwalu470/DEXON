@@ -39,3 +39,8 @@ class TradingEngine:
     def toggle_auto(self):
         self.auto_trading = not self.auto_trading
         return self.auto_trading
+
+
+    def get_position(self, token):
+        return self.positions.get(token, None)
+        
