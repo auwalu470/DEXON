@@ -21,4 +21,9 @@ jobs:
 
       - name: Run Solana Test
         run: python test_solana.py
-        
+
+              - name: Run DEXON Trading Test
+        run: python test_dexon.py
+
+      - name: Run DEXON Risk Test
+        run: python test_risk.py
