@@ -22,7 +22,7 @@ jobs:
       - name: Run Solana Test
         run: python test_solana.py
 
-              - name: Run DEXON Trading Test
+      - name: Run DEXON Trading Test
         run: python test_dexon.py
 
       - name: Run DEXON Risk Test
@@ -30,7 +30,4 @@ jobs:
 
       - name: Run DEXON Auto Trader Test
         run: python test_auto_trader.py
-
-
-      - name: Run DEXON Auto Trader Test
-        run: python test_auto_trader.py
+        
